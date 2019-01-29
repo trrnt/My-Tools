@@ -159,6 +159,22 @@ Google Hacking. Aka Google Dorks
 		
 
 Cross Site Scripting (XSS)
+	Can be
+		Reflected
+			Malicious payload is carried inside the request. 
+			Input field of the HTTP request is immediately reflected to the output page. 
+			E.g. Posting a link on a social network or via a phishing campaign. 
+				http://victim.site/search.php?find=<payload>
+			Some browsers have reflected XSS filter builtin. E.g. Chrome. 
+		Persistent
+			Payload is sent to the vulnerable webserver and then stored. 
+			When a web page of the vulnerable website pulls the stored malicious code and puts it within the HTML output, it will deliver the XSS payload.
+			Single attack can impact multiple users. E.g. if malicious payload is loaded into a social network page every user visiting that page will run the payload.
+			Common vector are html forms E.g. comments, user profiles and forum posts. 
+			Can display current cookies with <script>alert(document.cookie)</script>
+
+		DOM Based. 
+
 	Vulnerabilty lets an atatcker control some of the content of a web application
 	- Modify the content of a site at run-time
 	- Inject Malicious contents
@@ -172,11 +188,21 @@ Cross Site Scripting (XSS)
 			Lets attacker control the output HTML and JavaScript code
 			user input is any parameter coming from the client side. 
 				E.g. Request Headers, Cookies, Form Inputs, POST Parameters, GET Parameters. 
-				
+			Should be validated server side by well implemented functions that should sanitise or flte ruser input. 
+			NEVER TRUST user input. 
 		Victim User (Visitor)
+			XSS involves injecting malicious cide into the output of a web page. 
+			XSS typically considered low priotity as typically demonsstrated with a simple message window. 
+			XSS can
+				Make browsers load malicious content. 
+				Perform opperations on their behalf
+				Steal session cookied and thus able to impersonate users. 
 		The Penetration Tester
-		
-	
+			Finding an XSS
+				Look in every user input and test if output is somehow displayed on screen. 
+					Reflection Point. 
+					Test injecting HTML code. E.g. <i>, <pre> or <plaintext>
+					<script>alert('XSS')</script>		
 		
 				
 		
