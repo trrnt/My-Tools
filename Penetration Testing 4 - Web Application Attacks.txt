@@ -315,5 +315,6 @@ SQL Injections
 		'UNION SELECT null, null; -- - 
 		no Error. So two fields. 
 		' UNION SELECT 'elsid1', 'elsid2'; -- -
+		' UNION SELECT user(), 'elsid2'; -- -
 		
 		
